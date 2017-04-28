@@ -71,8 +71,8 @@ class ActiveLearner(object):
         self.sampling_probs = None
 
     def run(self):
-        cmds = {'train': self.update, 't': self.update, 'annotate': self.annotate, 'a': self.annotate}
-        prompt = 'what do you want to do ([t]rain/[a]nnotate/[q]uit)? '
+        cmds = {'train': self.update, 't': self.update, 'annotate': self.annotate, 'a': self.annotate, 'sample': self.sample, 's': self.sample}
+        prompt = 'what do you want to do ([t]rain/[a]nnotate/[s]ample/[q]uit)? '
         cmd = ''
         while cmd not in ['q', 'quit']:
             cmd = input(prompt)
@@ -219,9 +219,15 @@ class ActiveLearner(object):
     def read_labels(self):
         data = pd.read_csv(os.path.join(self.out_path, self.out_fname))
         labels, labeled_ids = data['label'].tolist(), data['id'].tolist()
-        labeled_rows = [self.ids.index(i) for i in labeled_ids]
+        labeled_rows = []
+        for i in labeled_ids:
+            try:
+                ix = self.ids.index(i)
+                labeled_rows.append(ix)
+            except:
+                print('WARNING: labeled ID {0} not in self.ids. This ID will be deleted on call to self.save_labels.'.format(i))
         if self.verbose:
-            print('imported {0} annotated samples.'.format(len(labels)))
+            print('imported {0} annotated samples.'.format(len(labeled_rows)))
         return labels, labeled_rows
 
     def save_labels(self):
@@ -343,7 +349,7 @@ class MultilabelActiveLearner(ActiveLearner):
         # f_labels.write('{0}:{1}\n'.format(new_label_key, label))
         return new_label_key
 
-    def sample(self, n_samples):
+    def sample(self, n_samples=1):
         # rows = np.where(self.class_preds == 1)[0]
         # np.array(self.documents)[self.class_preds == 1]
         sample = np.random.choice(range(len(self.documents)), size=n_samples, replace=False)
@@ -458,8 +464,8 @@ class MultiDimensionalLearner(object):
         self.verbose = verbose
 
     def run(self):
-        cmds = {'train': self.update, 't': self.update, 'annotate': self.annotate, 'a': self.annotate}
-        prompt = 'what do you want to do ([t]rain/[a]nnotate/[q]uit)? '
+        cmds = {'train': self.update, 't': self.update, 'annotate': self.annotate, 'a': self.annotate, 'sample': self.sample, 's': self.sample}
+        prompt = 'what do you want to do ([t]rain/[a]nnotate/[s]ample/[q]uit)? '
         cmd = ''
         while cmd not in ['q', 'quit']:
             cmd = input(prompt)
