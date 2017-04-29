@@ -48,5 +48,6 @@ def keyword_init(documents, keywords, dictionary=None, threshold=0.01, find_keyw
         weights.append(weight)
         labels.append(label)
         if i > 1 and i % 10000 == 0:
-            print('processed {0} of {1} documents so far...'.format(i, len(documents)))
+            print('processed {0} of {1} documents so far...'.format(i, len(documents)), end='\r')
+    print('\n')
     return labels, counts, weights

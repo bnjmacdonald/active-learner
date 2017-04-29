@@ -86,7 +86,8 @@ class ActiveLearner(object):
     def update(self, manual_only=True):
         if manual_only:
             if not len(self.labeled_rows) > 1:
-                raise RuntimeError("you can't train the model if you haven't annotated any documents! Either run self.initialize() or manually annotate at least two documents first.")
+                print("you can't train the model if you haven't annotated any documents! Either run self.initialize() or manually annotate at least two documents first.")
+                return
             X = self.X[self.labeled_rows]
             y = np.array(self.labels)[self.labeled_rows]
         else:
@@ -129,7 +130,7 @@ class ActiveLearner(object):
             if self.verbose:
                 print('Predictions:', np.bincount(self.class_preds))
                 # print(np.bincount(self.class_preds))
-        except sklearn.exceptions.NotFittedError:
+        except sklearn.exceptions.NotFittedError as e:
             print('Could not predict.')
             print(e)
         except IndexError as e:
@@ -480,7 +481,8 @@ class MultiDimensionalLearner(object):
         for i, learner in enumerate(self.learners):
             if manual_only:
                 if not len(learner.labeled_rows) > 1:
-                    raise RuntimeError("you can't train the model if you haven't annotated any documents! Either run learner.initialize() or manually annotate at least two documents first.")
+                    print("you can't train the model if you haven't annotated any documents! Either run learner.initialize() or manually annotate at least two documents first.")
+                    return
                 X = learner.X[learner.labeled_rows]
                 y = np.array(learner.labels)[learner.labeled_rows]
             else:
@@ -498,8 +500,6 @@ class MultiDimensionalLearner(object):
                 preds = learner.class_preds[~np.isnan(learner.labels)]
             if learner.verbose:
                 print('Learner {0} performance:'.format(i), learner.evaluate(y2, preds))
-            
-
 
     def annotate(self):
         for i, learner in enumerate(self.learners):
@@ -544,5 +544,8 @@ class MultiDimensionalLearner(object):
                 print('\tp({0:d}) = p({1}) = {2}'.format(k, v, prob))
         print(self.documents[i])
 
-    
+    def save_labels(self):
+        raise NotImplementedError
 
+    def save_preds(self):
+        raise NotImplementedError
