@@ -98,13 +98,14 @@ class ActiveLearner(object):
         X2 = X[~np.isnan(y)]
         self.train(X2, y2)
         self.predict(self.X)
-        if manual_only:
-            preds = self.class_preds[self.labeled_rows]
-            preds = preds[~np.isnan(y)]
-        else:
-            preds = self.class_preds[~np.isnan(self.labels)]
-        if self.verbose:
-            print('Performance:', self.evaluate(y2, preds))
+        if self.class_preds is not None:
+            if manual_only:
+                preds = self.class_preds[self.labeled_rows]
+                preds = preds[~np.isnan(y)]
+            else:
+                preds = self.class_preds[~np.isnan(self.labels)]
+            if self.verbose:
+                print('Performance:', self.evaluate(y2, preds))
 
     def train(self, X, labels):
         if self.verbose:
