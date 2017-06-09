@@ -222,7 +222,7 @@ class ActiveLearner(object):
         data = pd.read_csv(os.path.join(self.out_path, self.out_fname))
         data['id'] = data['id'].astype(str)
         labels, labeled_ids = data['label'].tolist(), data['id'].tolist()
-        assert type(labeled_ids[0]) != type(self.ids[0])
+        assert type(labeled_ids[0]) == type(self.ids[0])
         labeled_rows = []
         for i in labeled_ids:
             try:
