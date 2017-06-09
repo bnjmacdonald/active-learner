@@ -220,13 +220,15 @@ class ActiveLearner(object):
 
     def read_labels(self):
         data = pd.read_csv(os.path.join(self.out_path, self.out_fname))
+        data['id'] = data['id'].astype(str)
         labels, labeled_ids = data['label'].tolist(), data['id'].tolist()
+        assert type(labeled_ids[0]) != type(self.ids[0])
         labeled_rows = []
         for i in labeled_ids:
             try:
                 ix = self.ids.index(i)
                 labeled_rows.append(ix)
-            except:
+            except ValueError:
                 print('WARNING: labeled ID {0} not in self.ids. This ID will be deleted on call to self.save_labels.'.format(i))
         if self.verbose:
             print('imported {0} annotated samples.'.format(len(labeled_rows)))
