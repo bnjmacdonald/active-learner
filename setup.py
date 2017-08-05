@@ -12,6 +12,7 @@ setup(
     install_requires=[
         'sklearn',
         'numpy',
+        'scipy'
       ],
     zip_safe=False
 )
