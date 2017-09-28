@@ -1,8 +1,7 @@
-import os
 import json
 import random
 from actlearn import utils
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 # import numpy as np
 
 class Annotator(object):
@@ -48,8 +47,13 @@ class Annotator(object):
 
     def __init__(self, examples, path, id_field, fields='all', autosave=True):
         self.examples = examples
-        self.shuffled_indices = list(range(len(self.examples)))
-        random.shuffle(self.shuffled_indices)
+        try:
+            n_examples = len(self.examples)
+        except TypeError:
+            n_examples = self.examples.count()
+        indices = list(range(n_examples))
+        random.shuffle(indices)
+        self.shuffled_indices = indices
         self.id_field = id_field
         if fields == 'all':
             # fields = sorted(set([d for d in examples for k in d.keys()]))
@@ -66,8 +70,13 @@ class Annotator(object):
         """runs the command-line interface for annotating examples."""
         self._load()
         assert len(self.labeled_ids) == len(self.labeled_examples)
-        cmds = {'annotate': self._annotate, 'a': self._annotate, 'sample': self._sample, 's': self._sample, 'quit': self._quit, 'q': self._quit}
-        prompt = 'what do you want to do ([a]nnotate/[s]ample/[q]uit)? '
+        cmds = {
+            'annotate': self._annotate, 'a': self._annotate,
+            'count': self.label_counts, 'c': self.label_counts,
+            'sample': self._sample, 's': self._sample,
+            'quit': self._quit, 'q': self._quit
+        }
+        prompt = 'what do you want to do ([a]nnotate/[c]ount/[s]ample/[q]uit)? '
         cmd = ''
         while cmd not in ['q', 'quit']:
             cmd = input(prompt).strip().lower()
@@ -76,6 +85,26 @@ class Annotator(object):
             except KeyError:
                 print('"{0}" not recognized. Enter another value.'.format(cmd))
         return 0
+
+    def label_counts(self, stdout=True):
+        """counts the number of examples assigned to each label.
+        
+        Arguments:
+            stdout: bool (default: True). If True, prints counts to stdout.
+
+        Returns: 
+            collections.Counter object containing the number of examples
+                assigned to each label.
+
+        Example::
+
+            >>> annotator.label_counts()
+            Counter({'oversight': 137, 'procedural': 104, 'particularism': 95, 'policymaking': 92, 'other': 72})
+        """
+        counts = Counter([ex['label'] for ex in self.labeled_examples])
+        if stdout:
+            print(counts)
+        return counts
 
     def _annotate(self):
         """requests user to annotate examples, one example at a time."""
